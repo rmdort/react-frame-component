@@ -35,6 +35,9 @@ export default class Frame extends Component {
   constructor(props, context) {
     super(props, context);
     this._isMounted = false;
+    this.state = {
+      ready: false
+    };
   }
 
   componentDidMount() {
@@ -58,49 +61,57 @@ export default class Frame extends Component {
     return doc.body.children[0];
   }
 
-  renderFrameContents() {
-    if (!this._isMounted) {
-      return null;
+  getChildren() {
+    const doc = this.getDoc();
+
+    if (doc.querySelector('div') === null) {
+      this._setInitialContent = false;
     }
+
+    const contentDidMount = this.props.contentDidMount;
+    const contentDidUpdate = this.props.contentDidUpdate;
+    const win = doc.defaultView || doc.parentView;
+    const initialRender = !this._setInitialContent;
+    const contents = (
+      <Content contentDidMount={contentDidMount} contentDidUpdate={contentDidUpdate}>
+        <DocumentContext document={doc} window={win}>
+          <div className="frame-content">
+            {this.props.children}
+          </div>
+        </DocumentContext>
+      </Content>
+    );
+
+    if (initialRender) {
+      doc.open('text/html', 'replace');
+      doc.write(this.props.initialContent);
+      doc.close();
+      this._setInitialContent = true;
+    }
+
+    const mountTarget = this.getMountTarget();
+
+    return (
+      <div>
+        {ReactDOM.createPortal(this.props.head, this.getDoc().head)}
+        {ReactDOM.createPortal(contents, mountTarget)}
+      </div>
+    );
+  }
+
+  registerRef = (node) => {
+    this.node = node;
+  }
+
+  renderFrameContents() {
+    if (!this._isMounted || this.state.ready) return null;
 
     const doc = this.getDoc();
     if (doc && doc.readyState === 'complete') {
-      if (doc.querySelector('div') === null) {
-        this._setInitialContent = false;
-      }
-
-      const contentDidMount = this.props.contentDidMount;
-      const contentDidUpdate = this.props.contentDidUpdate;
-
-      const win = doc.defaultView || doc.parentView;
-      const initialRender = !this._setInitialContent;
-      const contents = (
-        <Content contentDidMount={contentDidMount} contentDidUpdate={contentDidUpdate}>
-          <DocumentContext document={doc} window={win}>
-            <div className="frame-content">
-              {this.props.children}
-            </div>
-          </DocumentContext>
-        </Content>
-      );
-
-      if (initialRender) {
-        doc.open('text/html', 'replace');
-        doc.write(this.props.initialContent);
-        doc.close();
-        this._setInitialContent = true;
-      }
-
-      const mountTarget = this.getMountTarget();
-
-      return (
-        <div>
-          {ReactDOM.createPortal(this.props.head, this.getDoc().head)}
-          {ReactDOM.createPortal(contents, mountTarget)}
-        </div>
-      );
+      this.setState({
+        ready: true
+      });
     }
-
     setTimeout(this.renderFrameContents.bind(this), 0);
     return null;
   }
@@ -116,8 +127,11 @@ export default class Frame extends Component {
     delete props.contentDidMount;
     delete props.contentDidUpdate;
     return (
-      <iframe {...props} ref={node => (this.node = node)}>
-        {this.renderFrameContents()}
+      <iframe {...props} ref={this.registerRef}>
+        {this.state.ready
+          ? this.getChildren()
+          : this.renderFrameContents()
+        }
       </iframe>
     );
   }

@@ -1,5 +1,5 @@
 {
-  "name": "react-frame-component",
+  "name": "@olasearch/react-frame-portal",
   "version": "2.0.0",
   "description": "React component to wrap your application or component in an iFrame for encapsulation purposes",
   "main": "lib/index.js",
@@ -65,8 +65,8 @@
     "mocha-osx-reporter": "^0.1.2",
     "npm-run-all": "^4.0.1",
     "prop-types": "^15.5.9",
-    "react": "^16.0.0",
-    "react-dom": "^16.0.0",
+    "react": "^16.3.0",
+    "react-dom": "^16.3.0",
     "rimraf": "^2.5.4",
     "sinon": "2.0.0-pre",
     "wallaby-webpack": "^0.0.30",
