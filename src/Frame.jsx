@@ -42,6 +42,7 @@ export default class Frame extends Component {
 
   componentDidMount() {
     this._isMounted = true;
+    this.renderFrameContents();
     this.forceUpdate();
   }
 
@@ -130,7 +131,7 @@ export default class Frame extends Component {
       <iframe {...props} ref={this.registerRef}>
         {this.state.ready
           ? this.getChildren()
-          : this.renderFrameContents()
+          : null
         }
       </iframe>
     );
