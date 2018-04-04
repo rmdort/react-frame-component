@@ -43,7 +43,6 @@ export default class Frame extends Component {
   componentDidMount() {
     this._isMounted = true;
     this.renderFrameContents();
-    this.forceUpdate();
   }
 
   componentWillUnmount() {
@@ -105,7 +104,7 @@ export default class Frame extends Component {
   }
 
   renderFrameContents() {
-    if (!this._isMounted || this.state.ready) return null;
+    if (!this._isMounted || this.state.ready) return;
 
     const doc = this.getDoc();
     if (doc && doc.readyState === 'complete') {
@@ -114,7 +113,6 @@ export default class Frame extends Component {
       });
     }
     setTimeout(this.renderFrameContents.bind(this), 0);
-    return null;
   }
 
   render() {
