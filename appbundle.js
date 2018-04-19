@@ -21321,6 +21321,10 @@
 	
 	var _DocumentContext2 = _interopRequireDefault(_DocumentContext);
 	
+	var _Content = __webpack_require__(45);
+	
+	var _Content2 = _interopRequireDefault(_Content);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21328,30 +21332,6 @@
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var hasConsole = typeof window !== 'undefined' && window.console;
-	var noop = function noop() {};
-	var swallowInvalidHeadWarning = noop;
-	var resetWarnings = noop;
-	
-	if (hasConsole) {
-	  (function () {
-	    var originalError = console.error; // eslint-disable-line no-console
-	    // Rendering a <head> into a body is technically invalid although it
-	    // works. We swallow React's validateDOMNesting warning if that is the
-	    // message to avoid confusion
-	    swallowInvalidHeadWarning = function swallowInvalidHeadWarning() {
-	      console.error = function (msg) {
-	        // eslint-disable-line no-console
-	        if (/<head>/.test(msg)) return;
-	        originalError.call(console, msg);
-	      };
-	    };
-	    resetWarnings = function resetWarnings() {
-	      return console.error = originalError;
-	    }; // eslint-disable-line no-console
-	  })();
-	}
 	
 	var Frame = function (_Component) {
 	  _inherits(Frame, _Component);
@@ -21365,6 +21345,10 @@
 	
 	    var _this = _possibleConstructorReturn(this, (Frame.__proto__ || Object.getPrototypeOf(Frame)).call(this, props, context));
 	
+	    _this.handleLoad = function () {
+	      _this.forceUpdate();
+	    };
+	
 	    _this._isMounted = false;
 	    return _this;
 	  }
@@ -21373,27 +21357,25 @@
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
 	      this._isMounted = true;
-	      this.renderFrameContents();
-	    }
-	  }, {
-	    key: 'componentDidUpdate',
-	    value: function componentDidUpdate() {
-	      this.renderFrameContents();
+	
+	      var doc = this.getDoc();
+	      if (doc && doc.readyState === 'complete') {
+	        this.forceUpdate();
+	      } else {
+	        this.node.addEventListener('load', this.handleLoad);
+	      }
 	    }
 	  }, {
 	    key: 'componentWillUnmount',
 	    value: function componentWillUnmount() {
 	      this._isMounted = false;
-	      var doc = this.getDoc();
-	      var mountTarget = this.getMountTarget();
-	      if (doc && mountTarget) {
-	        _reactDom2.default.unmountComponentAtNode(mountTarget);
-	      }
+	
+	      this.node.removeEventListener('load', this.handleLoad);
 	    }
 	  }, {
 	    key: 'getDoc',
 	    value: function getDoc() {
-	      return _reactDom2.default.findDOMNode(this).contentDocument; // eslint-disable-line
+	      return this.node.contentDocument; // eslint-disable-line
 	    }
 	  }, {
 	    key: 'getMountTarget',
@@ -21408,51 +21390,50 @@
 	    key: 'renderFrameContents',
 	    value: function renderFrameContents() {
 	      if (!this._isMounted) {
-	        return;
+	        return null;
 	      }
 	
 	      var doc = this.getDoc();
-	      if (doc && doc.readyState === 'complete') {
-	        if (doc.querySelector('div') === null) {
-	          this._setInitialContent = false;
-	        }
 	
-	        var win = doc.defaultView || doc.parentView;
-	        var initialRender = !this._setInitialContent;
-	        var contents = _react2.default.createElement(
+	      if (doc.querySelector('.frame-content') === null) {
+	        this._setInitialContent = false;
+	      }
+	
+	      var contentDidMount = this.props.contentDidMount;
+	      var contentDidUpdate = this.props.contentDidUpdate;
+	
+	      var win = doc.defaultView || doc.parentView;
+	      var initialRender = !this._setInitialContent;
+	      var contents = _react2.default.createElement(
+	        _Content2.default,
+	        { contentDidMount: contentDidMount, contentDidUpdate: contentDidUpdate },
+	        _react2.default.createElement(
 	          _DocumentContext2.default,
 	          { document: doc, window: win },
 	          _react2.default.createElement(
 	            'div',
 	            { className: 'frame-content' },
-	            this.props.head,
 	            this.props.children
 	          )
-	        );
+	        )
+	      );
 	
-	        if (initialRender) {
-	          doc.open('text/html', 'replace');
-	          doc.write(this.props.initialContent);
-	          doc.close();
-	          this._setInitialContent = true;
-	        }
-	
-	        swallowInvalidHeadWarning();
-	
-	        // unstable_renderSubtreeIntoContainer allows us to pass this component as
-	        // the parent, which exposes context to any child components.
-	        var callback = initialRender ? this.props.contentDidMount : this.props.contentDidUpdate;
-	        var mountTarget = this.getMountTarget();
-	
-	        _reactDom2.default.unstable_renderSubtreeIntoContainer(this, contents, mountTarget, callback);
-	        resetWarnings();
-	      } else {
-	        setTimeout(this.renderFrameContents.bind(this), 0);
+	      if (initialRender) {
+	        doc.open('text/html', 'replace');
+	        doc.write(this.props.initialContent);
+	        doc.close();
+	        this._setInitialContent = true;
 	      }
+	
+	      var mountTarget = this.getMountTarget();
+	
+	      return [_reactDom2.default.createPortal(this.props.head, this.getDoc().head), _reactDom2.default.createPortal(contents, mountTarget)];
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
+	      var _this2 = this;
+	
 	      var props = _extends({}, this.props, {
 	        children: undefined // The iframe isn't ready so we drop children from props here. #12, #17
 	      });
@@ -21461,7 +21442,13 @@
 	      delete props.mountTarget;
 	      delete props.contentDidMount;
 	      delete props.contentDidUpdate;
-	      return _react2.default.createElement('iframe', props);
+	      return _react2.default.createElement(
+	        'iframe',
+	        _extends({}, props, { ref: function ref(node) {
+	            return _this2.node = node;
+	          } }),
+	        this.renderFrameContents()
+	      );
 	    }
 	  }]);
 	
@@ -22434,6 +22421,71 @@
 	  window: _propTypes2.default.object.isRequired
 	};
 	exports.default = DocumentContext;
+
+/***/ },
+/* 45 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _propTypes = __webpack_require__(36);
+	
+	var _propTypes2 = _interopRequireDefault(_propTypes);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } // eslint-disable-line no-unused-vars
+	
+	
+	var Content = function (_Component) {
+	  _inherits(Content, _Component);
+	
+	  function Content() {
+	    _classCallCheck(this, Content);
+	
+	    return _possibleConstructorReturn(this, (Content.__proto__ || Object.getPrototypeOf(Content)).apply(this, arguments));
+	  }
+	
+	  _createClass(Content, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      this.props.contentDidMount();
+	    }
+	  }, {
+	    key: 'componentDidUpdate',
+	    value: function componentDidUpdate() {
+	      this.props.contentDidUpdate();
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react.Children.only(this.props.children);
+	    }
+	  }]);
+	
+	  return Content;
+	}(_react.Component);
+	
+	Content.propTypes = {
+	  children: _propTypes2.default.element.isRequired,
+	  contentDidMount: _propTypes2.default.func.isRequired,
+	  contentDidUpdate: _propTypes2.default.func.isRequired
+	};
+	exports.default = Content;
 
 /***/ }
 /******/ ]);
