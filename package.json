@@ -1,6 +1,6 @@
 {
   "name": "@olasearch/react-frame-portal",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "React component to wrap your application or component in an iFrame for encapsulation purposes",
   "main": "lib/index.js",
   "scripts": {
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/ryanseddon/react-frame-component.git"
+    "url": "git://github.com/rmdort/react-frame-component.git"
   },
   "keywords": [
     "React",
@@ -34,9 +34,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ryanseddon/react-frame-component/issues"
+    "url": "https://github.com/rmdort/react-frame-component/issues"
   },
-  "homepage": "https://github.com/ryanseddon/react-frame-component",
+  "homepage": "https://github.com/rmdort/react-frame-component",
   "devDependencies": {
     "babel-cli": "^6.18.0",
     "babel-core": "^6.21.0",
