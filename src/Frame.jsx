@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import DocumentContext from './DocumentContext';
 import Content from './Content';
+import { DocumentProvider, DocumentConsumer } from './Context'
 
 export default class Frame extends Component {
   // React warns when you render directly into the body since browser extensions
@@ -86,12 +87,15 @@ export default class Frame extends Component {
 
     const win = doc.defaultView || doc.parentView;
     const initialRender = !this._setInitialContent;
+    const contextValue = { document: doc, window: win }
     const contents = (
       <Content contentDidMount={contentDidMount} contentDidUpdate={contentDidUpdate}>
         <DocumentContext document={doc} window={win}>
-          <div className="frame-content">
-            {this.props.children}
-          </div>
+          <DocumentProvider value={contextValue}>
+            <div className="frame-content">
+              {this.props.children}
+            </div>
+          </DocumentProvider>
         </DocumentContext>
       </Content>
     );
