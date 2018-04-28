@@ -8,7 +8,7 @@ import { DocumentConsumer } from './Context'
 function withDocument (WrappedComponent) {
   return (props) => (
     <DocumentConsumer>
-      {({ document }) => <WrappedComponent {...props} document={document} />}
+      {({ document, window }) => <WrappedComponent {...props} window={window} document={document} />}
     </DocumentConsumer>
   )
 }
