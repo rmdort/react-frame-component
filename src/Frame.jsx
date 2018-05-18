@@ -115,6 +115,11 @@ export default class Frame extends Component {
     ];
   }
 
+  registerRef = (node) => {
+    this.node = node
+    this.props.innerRef && this.props.innerRef(node)
+  }
+
   render() {
     const props = {
       ...this.props,
@@ -126,7 +131,7 @@ export default class Frame extends Component {
     delete props.contentDidMount;
     delete props.contentDidUpdate;
     return (
-      <iframe {...props} ref={node => (this.node = node)}>
+      <iframe {...props} ref={this.registerRef}>
         {this.renderFrameContents()}
       </iframe>
     );
