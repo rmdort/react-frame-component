@@ -132,7 +132,7 @@ export default class Frame extends Component {
     delete props.mountTarget;
     delete props.contentDidMount;
     delete props.contentDidUpdate;
-    delete props.innerRef
+    delete props.innerRef;
     return (
       <iframe {...props} ref={this.registerRef}>
         {this.renderFrameContents()}
