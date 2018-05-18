@@ -1,10 +1,10 @@
-import React from 'react'
+import React from 'react';
 
 const DocumentContext = React.createContext({
   document: undefined,
   window: undefined
-})
-const DocumentProvider = DocumentContext.Provider
-const DocumentConsumer = DocumentContext.Consumer
+});
+const DocumentProvider = DocumentContext.Provider;
+const DocumentConsumer = DocumentContext.Consumer;
 
-export { DocumentProvider, DocumentConsumer }
+export { DocumentProvider, DocumentConsumer };

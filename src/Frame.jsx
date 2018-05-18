@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import DocumentContext from './DocumentContext';
 import Content from './Content';
-import { DocumentProvider, DocumentConsumer } from './Context'
+import { DocumentProvider } from './Context';
 
 export default class Frame extends Component {
   // React warns when you render directly into the body since browser extensions
@@ -17,6 +17,7 @@ export default class Frame extends Component {
     mountTarget: PropTypes.string,
     contentDidMount: PropTypes.func,
     contentDidUpdate: PropTypes.func,
+    innerRef: PropTypes.func,
     children: PropTypes.oneOfType([
       PropTypes.element,
       PropTypes.arrayOf(PropTypes.element)
@@ -28,6 +29,7 @@ export default class Frame extends Component {
     head: null,
     children: undefined,
     mountTarget: undefined,
+    innerRef: null,
     contentDidMount: () => {},
     contentDidUpdate: () => {},
     initialContent: '<!DOCTYPE html><html><head></head><body><div class="frame-root"></div></body></html>'
@@ -71,6 +73,11 @@ export default class Frame extends Component {
     this.forceUpdate();
   };
 
+  registerRef = (node) => {
+    this.node = node;
+    if (this.props.innerRef) this.props.innerRef(node);
+  };
+
   renderFrameContents() {
     if (!this._isMounted) {
       return null;
@@ -87,7 +94,7 @@ export default class Frame extends Component {
 
     const win = doc.defaultView || doc.parentView;
     const initialRender = !this._setInitialContent;
-    const contextValue = { document: doc, window: win }
+    const contextValue = { document: doc, window: win };
     const contents = (
       <Content contentDidMount={contentDidMount} contentDidUpdate={contentDidUpdate}>
         <DocumentContext document={doc} window={win}>
@@ -113,11 +120,6 @@ export default class Frame extends Component {
       ReactDOM.createPortal(this.props.head, this.getDoc().head),
       ReactDOM.createPortal(contents, mountTarget)
     ];
-  }
-
-  registerRef = (node) => {
-    this.node = node
-    this.props.innerRef && this.props.innerRef(node)
   }
 
   render() {
