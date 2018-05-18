@@ -94,7 +94,7 @@ export default class Frame extends Component {
 
     const win = doc.defaultView || doc.parentView;
     const initialRender = !this._setInitialContent;
-    const contextValue = { document: doc, window: win };
+    const contextValue = { document: doc, window: win, iframe: this.node };
     const contents = (
       <Content contentDidMount={contentDidMount} contentDidUpdate={contentDidUpdate}>
         <DocumentContext document={doc} window={win}>
